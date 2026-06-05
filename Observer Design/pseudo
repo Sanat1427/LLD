@@ -1,0 +1,81 @@
+START
+
+// Observer Interface
+INTERFACE Subscriber
+    METHOD update()
+
+// Observable Interface
+INTERFACE Channel
+    METHOD subscribe(subscriber)
+    METHOD unsubscribe(subscriber)
+    METHOD notifySubscribers()
+
+
+// Concrete Subject
+CLASS Channel IMPLEMENTS IChannel
+
+    VARIABLE subscribers : List
+    VARIABLE name
+    VARIABLE latestVideo
+
+    CONSTRUCTOR(name)
+        this.name = name
+        subscribers = empty list
+
+    METHOD subscribe(subscriber)
+        IF subscriber not in subscribers
+            add subscriber to subscribers
+
+    METHOD unsubscribe(subscriber)
+        remove subscriber from subscribers
+
+    METHOD notifySubscribers()
+        FOR EACH subscriber IN subscribers
+            subscriber.update()
+
+    METHOD uploadVideo(title)
+        latestVideo = title
+        PRINT "[Channel uploaded : " + title + "]"
+        notifySubscribers()
+
+    METHOD getVideoData()
+        RETURN "Checkout our new Video : " + latestVideo
+
+
+// Concrete Observer
+CLASS Subscriber IMPLEMENTS ISubscriber
+
+    VARIABLE name
+    VARIABLE channel
+
+    CONSTRUCTOR(name, channel)
+        this.name = name
+        this.channel = channel
+
+    METHOD update()
+        PRINT "Hey " + name
+        PRINT channel.getVideoData()
+
+
+// Main Program
+MAIN
+
+    CREATE channel = Channel("CoderArmy")
+
+    CREATE subscriber1 = Subscriber("Varun", channel)
+    CREATE subscriber2 = Subscriber("Tarun", channel)
+
+    // Subscribe users
+    channel.subscribe(subscriber1)
+    channel.subscribe(subscriber2)
+
+    // Upload first video
+    channel.uploadVideo("Observer Pattern Tutorial")
+
+    // Varun unsubscribes
+    channel.unsubscribe(subscriber1)
+
+    // Upload second video
+    channel.uploadVideo("Decorator Pattern Tutorial")
+
+END
