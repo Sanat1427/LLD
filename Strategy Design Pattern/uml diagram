@@ -1,0 +1,57 @@
+                    <<interface>>
+                    WalkableRobot
+                    + walk()
+                         ▲
+            ┌────────────┴────────────┐
+            │                         │
+      NormalWalk                 NoWalk
+      + walk()                   + walk()
+
+
+                    <<interface>>
+                    TalkableRobot
+                    + talk()
+                         ▲
+            ┌────────────┴────────────┐
+            │                         │
+      NormalTalk                 NoTalk
+      + talk()                   + talk()
+
+
+                    <<interface>>
+                    FlyableRobot
+                    + fly()
+                         ▲
+            ┌────────────┴────────────┐
+            │                         │
+      NormalFly                  NoFly
+      + fly()                    + fly()
+
+
+ ┌─────────────────────────────────────────────┐
+ │                  Robot                      │
+ ├─────────────────────────────────────────────┤
+ │ - walkBehavior : WalkableRobot              │
+ │ - talkBehavior : TalkableRobot              │
+ │ - flyBehavior  : FlyableRobot               │
+ ├─────────────────────────────────────────────┤
+ │ + walk()                                    │
+ │ + talk()                                    │
+ │ + fly()                                     │
+ │ + projection() : abstract                   │
+ └─────────────────────────────────────────────┘
+                 ▲
+                 │
+        ┌────────┴────────┐
+        │                 │
+ ┌───────────────┐  ┌───────────────┐
+ │CompanionRobot │  │ WorkerRobot   │
+ ├───────────────┤  ├───────────────┤
+ │+ projection() │  │+ projection() │
+ └───────────────┘  └───────────────┘
+
+
+Robot ──────► WalkableRobot
+Robot ──────► TalkableRobot
+Robot ──────► FlyableRobot
+(Has-A Relationship)
