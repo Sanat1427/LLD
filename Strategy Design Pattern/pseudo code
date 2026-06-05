@@ -1,0 +1,99 @@
+//Strategy Interface for walk
+Interface WalkableRobot
+Method Walk()
+
+CLASS Normalwalk IMPLEMENTS WalkableRobot
+Method Walk()
+Print "Walking normally..."
+
+CLASS Nowalk IMPLEMENTS WalkableRobot
+Method Walk()
+Print "Cannot Walk."
+
+//Strategy Interface for Talk
+Interface TalkableRobot
+Method talk()
+
+CLASS NormalTalk IMPLEMENTS TalkableRobot
+Method talk()
+Print "Talking Normally"
+
+CLASS NoTalk  IMPLEMENTS TalkableRobot
+Method talk()
+Print "Can't Talk"
+
+//Strategy Interface for fly
+Interface FlyableRobot
+Method fly()
+
+CLASS Normalfly IMPLEMENTS FlyableRobot
+Method fly()
+Print "flying Normally"
+
+CLASS Nofly  IMPLEMENTS FlyableRobot
+Method fly()
+Print "Can't fly"
+
+//Base Robot clss
+Abstract CLASS Robot
+
+  VARIABLE walkBehavior : WalkableRobot
+    VARIABLE talkBehavior : TalkableRobot
+    VARIABLE flyBehavior  : FlyableRobot
+
+    CONSTRUCTOR(w, t, f)
+        walkBehavior = w
+        talkBehavior = t
+        flyBehavior = f
+
+    METHOD walk()
+        walkBehavior.walk()
+
+    METHOD talk()
+        talkBehavior.talk()
+
+    METHOD fly()
+        flyBehavior.fly()
+    ABSTRACT Method Projection()
+
+    // Companion Robot
+    CLASS CompanionRobot EXTENDS Robot
+     CONSTRUCTOR(w,t,f)
+       CALL Parent CONSTRUCTOR(w,t,f)
+     METHOD Projection()
+        PRINT "Displaying friendly companion features..."
+        
+    // Worker Robot
+CLASS WorkerRobot EXTENDS Robot
+
+    CONSTRUCTOR(w, t, f)
+        CALL Parent Constructor(w, t, f)
+
+    METHOD projection()
+        PRINT "Displaying worker efficiency stats..."
+    
+//MAIN PROGRAM
+MAIN
+  CREATE robot1 As CompanionRobot(
+  NormalWalk,
+  NormalTalk,
+  NoFly
+  )
+  robot1.walk()
+  robot1.talk()
+  robot1.fly()
+  robot1.projection()
+  PRINT "-----"
+
+  CREATE robot2 AS WorkerRobot(
+  Nowalk,
+  NoTalk,
+  NormalFly
+  )
+  robot2.walk()
+  robot2.talk()
+  robot2.fly()
+  robot2.projection()
+  
+
+
