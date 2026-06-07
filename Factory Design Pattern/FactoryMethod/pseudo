@@ -1,0 +1,161 @@
+// ==========================================
+// FACTORY METHOD DESIGN PATTERN
+// Example: Burger Restaurants
+// ==========================================
+
+
+// Step 1: Define the Product Interface
+INTERFACE Burger
+
+    METHOD prepare()
+
+END INTERFACE
+
+
+// ==========================================
+// Step 2: Create Concrete Products
+// ==========================================
+
+CLASS BasicBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+
+        PRINT "Preparing Basic Burger"
+
+END CLASS
+
+
+CLASS StandardBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+
+        PRINT "Preparing Standard Burger"
+
+END CLASS
+
+
+CLASS PremiumBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+
+        PRINT "Preparing Premium Burger"
+
+END CLASS
+
+
+CLASS BasicWheatBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+
+        PRINT "Preparing Basic Wheat Burger"
+
+END CLASS
+
+
+CLASS StandardWheatBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+
+        PRINT "Preparing Standard Wheat Burger"
+
+END CLASS
+
+
+CLASS PremiumWheatBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+
+        PRINT "Preparing Premium Wheat Burger"
+
+END CLASS
+
+
+// ==========================================
+// Step 3: Factory Interface
+// Declares the factory method
+// ==========================================
+
+INTERFACE BurgerFactory
+
+    METHOD createBurger(type)
+
+END INTERFACE
+
+
+// ==========================================
+// Step 4: Concrete Factory #1
+// Singh Burger Restaurant
+// ==========================================
+
+CLASS SinghBurger IMPLEMENTS BurgerFactory
+
+    METHOD createBurger(type)
+
+        IF type = "basic" THEN
+            RETURN NEW BasicBurger()
+
+        ELSE IF type = "standard" THEN
+            RETURN NEW StandardBurger()
+
+        ELSE IF type = "premium" THEN
+            RETURN NEW PremiumBurger()
+
+        ELSE
+            PRINT "Invalid Burger Type"
+            RETURN NULL
+
+        END IF
+
+END CLASS
+
+
+// ==========================================
+// Step 5: Concrete Factory #2
+// King Burger Restaurant
+// ==========================================
+
+CLASS KingBurger IMPLEMENTS BurgerFactory
+
+    METHOD createBurger(type)
+
+        IF type = "basic" THEN
+            RETURN NEW BasicWheatBurger()
+
+        ELSE IF type = "standard" THEN
+            RETURN NEW StandardWheatBurger()
+
+        ELSE IF type = "premium" THEN
+            RETURN NEW PremiumWheatBurger()
+
+        ELSE
+            PRINT "Invalid Burger Type"
+            RETURN NULL
+
+        END IF
+
+END CLASS
+
+
+// ==========================================
+// CLIENT CODE
+// ==========================================
+
+MAIN
+
+    burgerType ← "basic"
+
+    // Choose a factory
+    myFactory ← NEW SinghBurger()
+
+    // Factory Method creates the object
+    burger ← myFactory.createBurger(burgerType)
+
+    IF burger IS NOT NULL THEN
+
+        burger.prepare()
+
+    END IF
+
+END MAIN
+
+
