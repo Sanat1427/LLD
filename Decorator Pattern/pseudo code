@@ -1,0 +1,143 @@
+// ===============================
+// DECORATOR DESIGN PATTERN
+// Example: Mario Power-Ups
+// ===============================
+
+// Step 1: Create a common interface for all characters
+INTERFACE Character
+
+    // Returns the current abilities of the character
+    METHOD getAbilities()
+
+END INTERFACE
+
+
+// Step 2: Create the basic Mario character
+CLASS Mario IMPLEMENTS Character
+
+    METHOD getAbilities()
+
+        // Mario starts with no special powers
+        RETURN "Mario"
+
+END CLASS
+
+
+// Step 3: Create an abstract decorator
+// A decorator is also a Character
+// and contains another Character object.
+ABSTRACT CLASS CharacterDecorator IMPLEMENTS Character
+
+    VARIABLE character
+
+    CONSTRUCTOR(character)
+
+        // Store the character that is being decorated
+        this.character ← character
+
+END CLASS
+
+
+// Step 4: HeightUp Decorator
+// Adds the HeightUp ability to Mario
+CLASS HeightUp EXTENDS CharacterDecorator
+
+    CONSTRUCTOR(character)
+
+        CALL parent constructor(character)
+
+    METHOD getAbilities()
+
+        // Keep previous abilities and add HeightUp
+        RETURN character.getAbilities() +
+               " with HeightUp"
+
+END CLASS
+
+
+// Step 5: GunPowerUp Decorator
+// Adds gun-shooting ability
+CLASS GunPowerUp EXTENDS CharacterDecorator
+
+    CONSTRUCTOR(character)
+
+        CALL parent constructor(character)
+
+    METHOD getAbilities()
+
+        // Preserve existing abilities
+        // and append Gun power
+        RETURN character.getAbilities() +
+               " with Gun"
+
+END CLASS
+
+
+// Step 6: StarPowerUp Decorator
+// Adds temporary invincibility/star power
+CLASS StarPowerUp EXTENDS CharacterDecorator
+
+    CONSTRUCTOR(character)
+
+        CALL parent constructor(character)
+
+    METHOD getAbilities()
+
+        // Add Star Power on top of all previous powers
+        RETURN character.getAbilities() +
+               " with Star Power (Limited Time)"
+
+END CLASS
+
+
+// ===============================
+// DRIVER PROGRAM
+// ===============================
+MAIN
+
+    // Create a normal Mario
+    mario ← NEW Mario()
+
+    PRINT "Basic Character: "
+    PRINT mario.getAbilities()
+
+    // Output:
+    // Mario
+
+
+    // Add HeightUp power-up
+    mario ← NEW HeightUp(mario)
+
+    PRINT "After HeightUp: "
+    PRINT mario.getAbilities()
+
+    // Output:
+    // Mario with HeightUp
+
+
+    // Add Gun power-up on top of HeightUp
+    mario ← NEW GunPowerUp(mario)
+
+    PRINT "After GunPowerUp: "
+    PRINT mario.getAbilities()
+
+    // Output:
+    // Mario with HeightUp with Gun
+
+
+    // Add Star Power on top of all existing powers
+    mario ← NEW StarPowerUp(mario)
+
+    PRINT "After StarPowerUp: "
+    PRINT mario.getAbilities()
+
+    // Output:
+    // Mario with HeightUp with Gun
+    // with Star Power (Limited Time)
+
+END MAIN
+
+
+
+// to an object dynamically."
+//
