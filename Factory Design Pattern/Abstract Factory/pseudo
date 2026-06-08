@@ -1,0 +1,242 @@
+// ==========================================
+// ABSTRACT FACTORY DESIGN PATTERN
+// Example: Burger Meal Factory
+// ==========================================
+
+
+// ==========================================
+// PRODUCT FAMILY 1 : BURGERS
+// ==========================================
+
+INTERFACE Burger
+
+    METHOD prepare()
+
+END INTERFACE
+
+
+CLASS BasicBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+        PRINT "Preparing Basic Burger"
+
+END CLASS
+
+
+CLASS StandardBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+        PRINT "Preparing Standard Burger"
+
+END CLASS
+
+
+CLASS PremiumBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+        PRINT "Preparing Premium Burger"
+
+END CLASS
+
+
+CLASS BasicWheatBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+        PRINT "Preparing Basic Wheat Burger"
+
+END CLASS
+
+
+CLASS StandardWheatBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+        PRINT "Preparing Standard Wheat Burger"
+
+END CLASS
+
+
+CLASS PremiumWheatBurger IMPLEMENTS Burger
+
+    METHOD prepare()
+        PRINT "Preparing Premium Wheat Burger"
+
+END CLASS
+
+
+
+// ==========================================
+// PRODUCT FAMILY 2 : GARLIC BREADS
+// ==========================================
+
+INTERFACE GarlicBread
+
+    METHOD prepare()
+
+END INTERFACE
+
+
+CLASS BasicGarlicBread IMPLEMENTS GarlicBread
+
+    METHOD prepare()
+        PRINT "Preparing Basic Garlic Bread"
+
+END CLASS
+
+
+CLASS CheeseGarlicBread IMPLEMENTS GarlicBread
+
+    METHOD prepare()
+        PRINT "Preparing Cheese Garlic Bread"
+
+END CLASS
+
+
+CLASS BasicWheatGarlicBread IMPLEMENTS GarlicBread
+
+    METHOD prepare()
+        PRINT "Preparing Basic Wheat Garlic Bread"
+
+END CLASS
+
+
+CLASS CheeseWheatGarlicBread IMPLEMENTS GarlicBread
+
+    METHOD prepare()
+        PRINT "Preparing Cheese Wheat Garlic Bread"
+
+END CLASS
+
+
+
+// ==========================================
+// ABSTRACT FACTORY
+// Creates a family of related products
+// ==========================================
+
+INTERFACE MealFactory
+
+    METHOD createBurger(type)
+
+    METHOD createGarlicBread(type)
+
+END INTERFACE
+
+
+
+// ==========================================
+// CONCRETE FACTORY 1
+// Singh Burger Restaurant
+// Creates Normal Burgers +
+// Normal Garlic Breads
+// ==========================================
+
+CLASS SinghBurger IMPLEMENTS MealFactory
+
+    METHOD createBurger(type)
+
+        IF type = "basic" THEN
+            RETURN NEW BasicBurger()
+
+        ELSE IF type = "standard" THEN
+            RETURN NEW StandardBurger()
+
+        ELSE IF type = "premium" THEN
+            RETURN NEW PremiumBurger()
+
+        ELSE
+            RETURN NULL
+
+        END IF
+
+
+    METHOD createGarlicBread(type)
+
+        IF type = "basic" THEN
+            RETURN NEW BasicGarlicBread()
+
+        ELSE IF type = "cheese" THEN
+            RETURN NEW CheeseGarlicBread()
+
+        ELSE
+            RETURN NULL
+
+        END IF
+
+END CLASS
+
+
+
+// ==========================================
+// CONCRETE FACTORY 2
+// King Burger Restaurant
+// Creates Wheat Burgers +
+// Wheat Garlic Breads
+// ==========================================
+
+CLASS KingBurger IMPLEMENTS MealFactory
+
+    METHOD createBurger(type)
+
+        IF type = "basic" THEN
+            RETURN NEW BasicWheatBurger()
+
+        ELSE IF type = "standard" THEN
+            RETURN NEW StandardWheatBurger()
+
+        ELSE IF type = "premium" THEN
+            RETURN NEW PremiumWheatBurger()
+
+        ELSE
+            RETURN NULL
+
+        END IF
+
+
+    METHOD createGarlicBread(type)
+
+        IF type = "basic" THEN
+            RETURN NEW BasicWheatGarlicBread()
+
+        ELSE IF type = "cheese" THEN
+            RETURN NEW CheeseWheatGarlicBread()
+
+        ELSE
+            RETURN NULL
+
+        END IF
+
+END CLASS
+
+
+
+// ==========================================
+// CLIENT CODE
+// ==========================================
+
+MAIN
+
+    burgerType ← "basic"
+    garlicBreadType ← "cheese"
+
+    // Select a factory
+    mealFactory ← NEW SinghBurger()
+
+    // Create related products
+    burger ← mealFactory.createBurger(burgerType)
+
+    garlicBread ← mealFactory.createGarlicBread(
+                        garlicBreadType
+                   )
+
+    // Use the products
+    IF burger IS NOT NULL THEN
+        burger.prepare()
+    END IF
+
+    IF garlicBread IS NOT NULL THEN
+        garlicBread.prepare()
+    END IF
+
+END MAIN
+
+
