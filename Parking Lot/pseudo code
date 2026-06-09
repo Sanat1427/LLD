@@ -1,0 +1,496 @@
+/**********************************************************************
+* PARKING LOT SYSTEM - LOW LEVEL DESIGN (PSEUDOCODE)
+*
+* Design Patterns Used:
+* 1. Factory Pattern  -> Vehicle Creation
+* 2. Strategy Pattern -> Fee Calculation
+* 3. Strategy Pattern -> Payment Processing
+* 4. Singleton Pattern (Optional) -> Parking Lot
+*
+* Flow:
+* Vehicle Arrives
+*      ↓
+* Create Vehicle
+*      ↓
+* Find Available Spot
+*      ↓
+* Generate Ticket
+*      ↓
+* Park Vehicle
+*      ↓
+* Exit Vehicle
+*      ↓
+* Calculate Fee
+*      ↓
+* Process Payment
+*      ↓
+* Vacate Spot
+**********************************************************************/
+
+
+/////////////////////////////
+// ENUMS
+/////////////////////////////
+
+ENUM VehicleType
+    BIKE
+    CAR
+    TRUCK
+END
+
+ENUM PaymentType
+    CASH
+    CARD
+    UPI
+END
+
+ENUM TicketStatus
+    ACTIVE
+    CLOSED
+END
+
+
+/////////////////////////////
+// VEHICLE HIERARCHY
+/////////////////////////////
+
+/*
+ * Base class for all vehicles.
+ */
+ABSTRACT CLASS Vehicle
+
+    vehicleNumber
+    vehicleType
+
+    CONSTRUCTOR(vehicleNumber, vehicleType)
+
+        this.vehicleNumber = vehicleNumber
+        this.vehicleType = vehicleType
+
+    METHOD getVehicleType()
+
+        RETURN vehicleType
+
+END CLASS
+
+
+CLASS Bike EXTENDS Vehicle
+
+    CONSTRUCTOR(vehicleNumber)
+
+        SUPER(vehicleNumber, BIKE)
+
+END CLASS
+
+
+CLASS Car EXTENDS Vehicle
+
+    CONSTRUCTOR(vehicleNumber)
+
+        SUPER(vehicleNumber, CAR)
+
+END CLASS
+
+
+CLASS Truck EXTENDS Vehicle
+
+    CONSTRUCTOR(vehicleNumber)
+
+        SUPER(vehicleNumber, TRUCK)
+
+END CLASS
+
+
+/////////////////////////////
+// FACTORY PATTERN
+/////////////////////////////
+
+/*
+ * Responsible for creating vehicles.
+ */
+CLASS VehicleFactory
+
+    METHOD createVehicle(type, vehicleNumber)
+
+        IF type == BIKE
+            RETURN new Bike(vehicleNumber)
+
+        ELSE IF type == CAR
+            RETURN new Car(vehicleNumber)
+
+        ELSE IF type == TRUCK
+            RETURN new Truck(vehicleNumber)
+
+        THROW InvalidVehicleTypeException
+
+END CLASS
+
+
+/////////////////////////////
+// PARKING SPOTS
+/////////////////////////////
+
+/*
+ * Base class for all parking spots.
+ */
+ABSTRACT CLASS ParkingSpot
+
+    spotId
+    occupied
+    vehicle
+
+    CONSTRUCTOR(spotId)
+
+        this.spotId = spotId
+        occupied = false
+        vehicle = NULL
+
+    METHOD isFree()
+
+        RETURN occupied == false
+
+    METHOD parkVehicle(vehicle)
+
+        occupied = true
+        this.vehicle = vehicle
+
+    METHOD vacateSpot()
+
+        occupied = false
+        vehicle = NULL
+
+    ABSTRACT METHOD canPark(vehicle)
+
+END CLASS
+
+
+CLASS BikeSpot EXTENDS ParkingSpot
+
+    METHOD canPark(vehicle)
+
+        RETURN vehicle.getVehicleType() == BIKE
+
+END CLASS
+
+
+CLASS CarSpot EXTENDS ParkingSpot
+
+    METHOD canPark(vehicle)
+
+        RETURN vehicle.getVehicleType() == CAR
+
+END CLASS
+
+
+CLASS TruckSpot EXTENDS ParkingSpot
+
+    METHOD canPark(vehicle)
+
+        RETURN vehicle.getVehicleType() == TRUCK
+
+END CLASS
+
+
+/////////////////////////////
+// PARKING TICKET
+/////////////////////////////
+
+/*
+ * Generated when a vehicle enters.
+ */
+CLASS ParkingTicket
+
+    ticketId
+    vehicle
+    parkingSpot
+
+    entryTime
+    exitTime
+
+    status
+
+    CONSTRUCTOR(ticketId, vehicle, parkingSpot)
+
+        this.ticketId = ticketId
+        this.vehicle = vehicle
+        this.parkingSpot = parkingSpot
+
+        entryTime = CURRENT_TIME
+        status = ACTIVE
+
+END CLASS
+
+
+/////////////////////////////
+// FEE STRATEGY PATTERN
+/////////////////////////////
+
+/*
+ * Different vehicle types may have
+ * different parking charges.
+ */
+INTERFACE FeeStrategy
+
+    METHOD calculateFee(duration)
+
+END INTERFACE
+
+
+CLASS BikeFeeStrategy IMPLEMENTS FeeStrategy
+
+    METHOD calculateFee(duration)
+
+        RETURN duration * 10
+
+END CLASS
+
+
+CLASS CarFeeStrategy IMPLEMENTS FeeStrategy
+
+    METHOD calculateFee(duration)
+
+        RETURN duration * 20
+
+END CLASS
+
+
+CLASS TruckFeeStrategy IMPLEMENTS FeeStrategy
+
+    METHOD calculateFee(duration)
+
+        RETURN duration * 50
+
+END CLASS
+
+
+/*
+ * Returns appropriate fee strategy.
+ */
+CLASS FeeStrategyFactory
+
+    METHOD getFeeStrategy(vehicleType)
+
+        IF vehicleType == BIKE
+            RETURN new BikeFeeStrategy()
+
+        ELSE IF vehicleType == CAR
+            RETURN new CarFeeStrategy()
+
+        ELSE
+            RETURN new TruckFeeStrategy()
+
+END CLASS
+
+
+/////////////////////////////
+// PAYMENT STRATEGY PATTERN
+/////////////////////////////
+
+/*
+ * Supports multiple payment methods.
+ */
+INTERFACE PaymentStrategy
+
+    METHOD pay(amount)
+
+END INTERFACE
+
+
+CLASS CashPayment IMPLEMENTS PaymentStrategy
+
+    METHOD pay(amount)
+
+        PRINT "Paid " + amount + " using Cash"
+
+END CLASS
+
+
+CLASS CardPayment IMPLEMENTS PaymentStrategy
+
+    METHOD pay(amount)
+
+        PRINT "Paid " + amount + " using Card"
+
+END CLASS
+
+
+CLASS UpiPayment IMPLEMENTS PaymentStrategy
+
+    METHOD pay(amount)
+
+        PRINT "Paid " + amount + " using UPI"
+
+END CLASS
+
+
+/////////////////////////////
+// PARKING FLOOR
+/////////////////////////////
+
+/*
+ * Each floor contains multiple spots.
+ */
+CLASS ParkingFloor
+
+    floorId
+
+    LIST<ParkingSpot> spots
+
+    CONSTRUCTOR(floorId)
+
+        this.floorId = floorId
+        spots = []
+
+    METHOD addSpot(spot)
+
+        spots.add(spot)
+
+    METHOD findAvailableSpot(vehicle)
+
+        FOR EACH spot IN spots
+
+            IF spot.isFree()
+               AND spot.canPark(vehicle)
+
+                RETURN spot
+
+        RETURN NULL
+
+END CLASS
+
+
+/////////////////////////////
+// PARKING LOT
+/////////////////////////////
+
+/*
+ * Main orchestrator class.
+ * Manages floors, parking and exits.
+ */
+CLASS ParkingLot
+
+    LIST<ParkingFloor> floors
+
+    CONSTRUCTOR()
+
+        floors = []
+
+    METHOD addFloor(floor)
+
+        floors.add(floor)
+
+
+    ////////////////////////////////////////////////////
+    // PARK VEHICLE
+    ////////////////////////////////////////////////////
+
+    METHOD parkVehicle(vehicle)
+
+        FOR EACH floor IN floors
+
+            spot = floor.findAvailableSpot(vehicle)
+
+            IF spot != NULL
+
+                spot.parkVehicle(vehicle)
+
+                ticket =
+                    new ParkingTicket(
+                        generateTicketId(),
+                        vehicle,
+                        spot
+                    )
+
+                PRINT "Vehicle parked successfully"
+
+                RETURN ticket
+
+        THROW "Parking Lot Full"
+
+
+    ////////////////////////////////////////////////////
+    // EXIT VEHICLE
+    ////////////////////////////////////////////////////
+
+    METHOD exitVehicle(ticket, paymentStrategy)
+
+        ticket.exitTime = CURRENT_TIME
+
+        duration =
+            ticket.exitTime - ticket.entryTime
+
+        feeStrategy =
+            FeeStrategyFactory.getFeeStrategy(
+                ticket.vehicle.getVehicleType()
+            )
+
+        fee =
+            feeStrategy.calculateFee(duration)
+
+        paymentStrategy.pay(fee)
+
+        ticket.parkingSpot.vacateSpot()
+
+        ticket.status = CLOSED
+
+        PRINT "Vehicle exited successfully"
+
+END CLASS
+
+
+/////////////////////////////
+// CLIENT / DRIVER CODE
+/////////////////////////////
+
+MAIN()
+
+    parkingLot = new ParkingLot()
+
+    //////////////////////////////////////
+    // Create Floor 1
+    //////////////////////////////////////
+
+    floor1 = new ParkingFloor(1)
+
+    floor1.addSpot(new BikeSpot(1))
+    floor1.addSpot(new BikeSpot(2))
+
+    floor1.addSpot(new CarSpot(3))
+    floor1.addSpot(new CarSpot(4))
+
+    floor1.addSpot(new TruckSpot(5))
+
+    parkingLot.addFloor(floor1)
+
+
+    //////////////////////////////////////
+    // Vehicle Entry
+    //////////////////////////////////////
+
+    vehicle =
+        VehicleFactory.createVehicle(
+            CAR,
+            "JH05AB1234"
+        )
+
+    ticket =
+        parkingLot.parkVehicle(vehicle)
+
+
+    //////////////////////////////////////
+    // Vehicle Exit
+    //////////////////////////////////////
+
+    paymentStrategy =
+        new CardPayment()
+
+    parkingLot.exitVehicle(
+        ticket,
+        paymentStrategy
+    )
+
+END
+
+> O(1)
+*
+********************************************************/
