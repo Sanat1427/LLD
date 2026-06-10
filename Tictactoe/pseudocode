@@ -1,0 +1,579 @@
+/*****************************************************************
+ * TIC TAC TOE - PSEUDOCODE
+ *
+ * Design Patterns Used:
+ * 1. Observer Pattern  -> Notifications
+ * 2. Strategy Pattern  -> Game Rules
+ * 3. Factory Pattern   -> Game Creation
+ * 4. Queue (Deque)     -> Player Turn Management
+ *****************************************************************/
+
+
+/********************* OBSERVER PATTERN **************************/
+
+// Any notification service must implement this
+INTERFACE Observer
+
+    METHOD update(message)
+
+END INTERFACE
+
+
+// Simple notification implementation
+CLASS ConsoleNotifier IMPLEMENTS Observer
+
+    METHOD update(message)
+
+        PRINT "[Notification] " + message
+
+END CLASS
+
+
+
+/********************* SYMBOL CLASS ******************************/
+
+// Represents X, O, etc.
+CLASS Symbol
+
+    VARIABLE mark
+
+    CONSTRUCTOR(mark)
+
+        this.mark = mark
+
+    METHOD getMark()
+
+        RETURN mark
+
+END CLASS
+
+
+
+/********************* BOARD CLASS *******************************/
+
+// Board is a dumb object.
+// It only stores and updates cells.
+CLASS Board
+
+    VARIABLES
+        grid
+        size
+        emptyCell
+
+    CONSTRUCTOR(size)
+
+        this.size = size
+
+        // Empty cells represented by '-'
+        emptyCell = Symbol('-')
+
+        CREATE size x size grid
+
+        FOR every cell in grid
+
+            grid[cell] = emptyCell
+
+    END CONSTRUCTOR
+
+
+    // Check whether a cell is available
+    METHOD isCellEmpty(row, col)
+
+        IF row OR col is outside board
+
+            RETURN false
+
+        RETURN grid[row][col] == emptyCell
+
+    END METHOD
+
+
+    // Place player's symbol
+    METHOD placeMark(row, col, symbol)
+
+        IF position is invalid
+
+            RETURN false
+
+        IF cell is already occupied
+
+            RETURN false
+
+        grid[row][col] = symbol
+
+        RETURN true
+
+    END METHOD
+
+
+    // Return symbol at given position
+    METHOD getCell(row, col)
+
+        IF position invalid
+
+            RETURN emptyCell
+
+        RETURN grid[row][col]
+
+    END METHOD
+
+
+    METHOD getSize()
+
+        RETURN size
+
+    END METHOD
+
+
+    METHOD getEmptyCell()
+
+        RETURN emptyCell
+
+    END METHOD
+
+
+    // Print board
+    METHOD display()
+
+        PRINT board row by row
+
+    END METHOD
+
+END CLASS
+
+
+
+/********************* PLAYER CLASS ******************************/
+
+CLASS TicTacToePlayer
+
+    VARIABLES
+
+        playerId
+        name
+        symbol
+        score
+
+    CONSTRUCTOR(id, name, symbol)
+
+        this.playerId = id
+        this.name = name
+        this.symbol = symbol
+        score = 0
+
+    END CONSTRUCTOR
+
+
+    METHOD getName()
+
+        RETURN name
+
+    END METHOD
+
+
+    METHOD getSymbol()
+
+        RETURN symbol
+
+    END METHOD
+
+
+    METHOD getScore()
+
+        RETURN score
+
+    END METHOD
+
+
+    // Increase score after victory
+    METHOD incrementScore()
+
+        score++
+
+    END METHOD
+
+END CLASS
+
+
+
+/********************* STRATEGY PATTERN **************************/
+
+// Different rule sets can implement this interface
+INTERFACE TicTacToeRules
+
+    METHOD isValidMove(board, row, col)
+
+    METHOD checkWinCondition(board, symbol)
+
+    METHOD checkDrawCondition(board)
+
+END INTERFACE
+
+
+
+/**************** STANDARD TIC TAC TOE RULES *********************/
+
+CLASS StandardTicTacToeRules
+    IMPLEMENTS TicTacToeRules
+
+
+    // Valid move = cell must be empty
+    METHOD isValidMove(board, row, col)
+
+        RETURN board.isCellEmpty(row, col)
+
+    END METHOD
+
+
+    // Check all possible winning combinations
+    METHOD checkWinCondition(board, symbol)
+
+        size = board.getSize()
+
+
+        /******** CHECK ROWS ********/
+
+        FOR each row
+
+            win = true
+
+            FOR each column
+
+                IF board[row][column] != symbol
+
+                    win = false
+                    BREAK
+
+            END FOR
+
+            IF win == true
+
+                RETURN true
+
+        END FOR
+
+
+
+        /******** CHECK COLUMNS ********/
+
+        FOR each column
+
+            win = true
+
+            FOR each row
+
+                IF board[row][column] != symbol
+
+                    win = false
+                    BREAK
+
+            END FOR
+
+            IF win == true
+
+                RETURN true
+
+        END FOR
+
+
+
+        /******** CHECK MAIN DIAGONAL ********/
+
+        win = true
+
+        FOR i = 0 to size-1
+
+            IF board[i][i] != symbol
+
+                win = false
+                BREAK
+
+        END FOR
+
+        IF win == true
+
+            RETURN true
+
+
+
+        /******** CHECK ANTI-DIAGONAL ********/
+
+        win = true
+
+        FOR i = 0 to size-1
+
+            IF board[i][size-1-i] != symbol
+
+                win = false
+                BREAK
+
+        END FOR
+
+        RETURN win
+
+    END METHOD
+
+
+
+    // Draw = no empty cells left
+    METHOD checkDrawCondition(board)
+
+        FOR every cell in board
+
+            IF cell is empty
+
+                RETURN false
+
+        END FOR
+
+        RETURN true
+
+    END METHOD
+
+END CLASS
+
+
+
+/********************* GAME CLASS ********************************/
+
+// Main game controller
+CLASS TicTacToeGame
+
+    VARIABLES
+
+        board
+        playersQueue
+        rules
+        observers
+        gameOver
+
+
+    CONSTRUCTOR(boardSize)
+
+        board = new Board(boardSize)
+
+        // Queue helps rotate turns
+        playersQueue = empty deque
+
+        rules = new StandardTicTacToeRules()
+
+        observers = empty list
+
+        gameOver = false
+
+    END CONSTRUCTOR
+
+
+
+    METHOD addPlayer(player)
+
+        playersQueue.addLast(player)
+
+    END METHOD
+
+
+
+    METHOD addObserver(observer)
+
+        observers.add(observer)
+
+    END METHOD
+
+
+
+    // Notify all registered observers
+    METHOD notify(message)
+
+        FOR each observer
+
+            observer.update(message)
+
+    END METHOD
+
+
+
+    METHOD play()
+
+        IF number of players < 2
+
+            PRINT "Need at least 2 players"
+            RETURN
+
+
+        notify("Game Started")
+
+
+        WHILE gameOver == false
+
+
+            /***** SHOW BOARD *****/
+
+            board.display()
+
+
+            /***** CURRENT PLAYER *****/
+
+            currentPlayer = playersQueue.front()
+
+
+            PRINT currentPlayer name
+            INPUT row, col
+
+
+            /***** VALIDATE MOVE *****/
+
+            IF rules.isValidMove(board,row,col)
+
+
+                /***** PLACE SYMBOL *****/
+
+                board.placeMark(
+                    row,
+                    col,
+                    currentPlayer.symbol
+                )
+
+
+                notify(
+                    currentPlayer.name +
+                    " played move"
+                )
+
+
+                /***** CHECK WINNER *****/
+
+                IF rules.checkWinCondition(
+                    board,
+                    currentPlayer.symbol
+                )
+
+                    board.display()
+
+                    PRINT currentPlayer.name +
+                          " wins"
+
+                    currentPlayer.incrementScore()
+
+                    notify("Winner Found")
+
+                    gameOver = true
+
+
+
+                /***** CHECK DRAW *****/
+
+                ELSE IF rules.checkDrawCondition(board)
+
+                    board.display()
+
+                    PRINT "Draw"
+
+                    notify("Match Draw")
+
+                    gameOver = true
+
+
+
+                /***** NEXT PLAYER TURN *****/
+
+                ELSE
+
+                    playersQueue.removeFirst()
+
+                    playersQueue.addLast(
+                        currentPlayer
+                    )
+
+                END IF
+
+
+            ELSE
+
+                PRINT "Invalid Move"
+
+            END IF
+
+        END WHILE
+
+    END METHOD
+
+END CLASS
+
+
+
+/********************* FACTORY PATTERN ***************************/
+
+// Supported game types
+ENUM GameType
+
+    STANDARD
+
+END ENUM
+
+
+
+CLASS TicTacToeGameFactory
+
+    METHOD createGame(type, boardSize)
+
+        IF type == STANDARD
+
+            RETURN new TicTacToeGame(boardSize)
+
+        RETURN null
+
+    END METHOD
+
+END CLASS
+
+
+
+/************************ MAIN ***********************************/
+
+MAIN
+
+    PRINT "TIC TAC TOE"
+
+
+    /***** TAKE BOARD SIZE *****/
+
+    INPUT boardSize
+
+
+    /***** CREATE GAME USING FACTORY *****/
+
+    game =
+        TicTacToeGameFactory.createGame(
+            STANDARD,
+            boardSize
+        )
+
+
+    /***** REGISTER OBSERVER *****/
+
+    notifier = ConsoleNotifier()
+
+    game.addObserver(notifier)
+
+
+    /***** CREATE PLAYERS *****/
+
+    player1 =
+        Player(1, "Aditya", 'X')
+
+    player2 =
+        Player(2, "Harshita", 'O')
+
+
+    /***** ADD PLAYERS TO GAME *****/
+
+    game.addPlayer(player1)
+
+    game.addPlayer(player2)
+
+
+    /***** START GAME *****/
+
+    game.play()
+
+END MAIN
