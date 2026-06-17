@@ -1,0 +1,557 @@
+=====================================================
+CAR RENTAL SYSTEM
+=====================================================
+
+PURPOSE:
+    Allow customers to rent vehicles from different
+    rental stores.
+
+FEATURES:
+    - Search Vehicles
+    - Check Availability
+    - Create Reservation
+    - Process Payment
+    - Start Rental
+    - Complete Rental
+    - Cancel Reservation
+
+DESIGN PATTERNS USED:
+    1. Factory Pattern
+    2. Strategy Pattern
+    3. Singleton Pattern
+
+=====================================================
+ENUMS
+=====================================================
+
+ENUM VehicleType
+    ECONOMY
+    SUV
+    LUXURY
+    BIKE
+    AUTO
+
+ENUM VehicleStatus
+    AVAILABLE
+    RESERVED
+    RENTED
+    MAINTENANCE
+
+ENUM ReservationStatus
+    PENDING
+    CONFIRMED
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+
+=====================================================
+ABSTRACT VEHICLE
+=====================================================
+
+CLASS Vehicle
+
+    VARIABLES
+
+        registrationNumber
+        model
+        vehicleType
+        vehicleStatus
+        baseRentalPrice
+
+    -------------------------------------------------
+    // Every vehicle calculates rental fee differently
+    -------------------------------------------------
+
+    ABSTRACT FUNCTION calculateRentalFee(days)
+
+END CLASS
+
+=====================================================
+CONCRETE VEHICLES
+=====================================================
+
+CLASS EconomyVehicle EXTENDS Vehicle
+
+    FUNCTION calculateRentalFee(days)
+
+        RETURN baseRentalPrice * days
+
+END CLASS
+
+-----------------------------------------------------
+
+CLASS SUVVehicle EXTENDS Vehicle
+
+    FUNCTION calculateRentalFee(days)
+
+        RETURN baseRentalPrice * days * 1.5
+
+END CLASS
+
+-----------------------------------------------------
+
+CLASS LuxuryVehicle EXTENDS Vehicle
+
+    FUNCTION calculateRentalFee(days)
+
+        RETURN baseRentalPrice * days * 2.5
+               + premiumCharge
+
+END CLASS
+
+=====================================================
+FACTORY PATTERN
+=====================================================
+
+CLASS VehicleFactory
+
+    -------------------------------------------------
+    // Factory hides object creation logic
+    -------------------------------------------------
+
+    FUNCTION createVehicle(type)
+
+        SWITCH(type)
+
+            CASE ECONOMY
+
+                RETURN EconomyVehicle
+
+            CASE SUV
+
+                RETURN SUVVehicle
+
+            CASE LUXURY
+
+                RETURN LuxuryVehicle
+
+            CASE BIKE
+
+                RETURN BikeVehicle
+
+            CASE AUTO
+
+                RETURN AutoVehicle
+
+            DEFAULT
+
+                THROW InvalidVehicleTypeException
+
+    END FUNCTION
+
+END CLASS
+
+=====================================================
+LOCATION
+=====================================================
+
+CLASS Location
+
+    address
+    city
+    state
+    zipCode
+
+END CLASS
+
+=====================================================
+RENTAL STORE
+=====================================================
+
+CLASS RentalStore
+
+    id
+    storeName
+    location
+
+    -------------------------------------------------
+    // Store owns vehicles
+    -------------------------------------------------
+
+    vehicleInventory
+
+    FUNCTION addVehicle(vehicle)
+
+        vehicleInventory.add(vehicle)
+
+    END FUNCTION
+
+    -------------------------------------------------
+    // Remove vehicle from inventory
+    -------------------------------------------------
+
+    FUNCTION removeVehicle(vehicle)
+
+        vehicleInventory.remove(vehicle)
+
+    END FUNCTION
+
+    -------------------------------------------------
+    // Return all available vehicles
+    -------------------------------------------------
+
+    FUNCTION getAvailableVehicles()
+
+        availableVehicles = empty list
+
+        FOR each vehicle
+
+            IF vehicle.status == AVAILABLE
+
+                add vehicle to availableVehicles
+
+        RETURN availableVehicles
+
+    END FUNCTION
+
+END CLASS
+
+=====================================================
+USER
+=====================================================
+
+CLASS User
+
+    userId
+    name
+    email
+
+    reservations
+
+    FUNCTION addReservation(reservation)
+
+        reservations.add(reservation)
+
+    END FUNCTION
+
+END CLASS
+
+=====================================================
+RESERVATION
+=====================================================
+
+CLASS Reservation
+
+    reservationId
+
+    user
+    vehicle
+
+    pickupStore
+    returnStore
+
+    startDate
+    endDate
+
+    reservationStatus
+
+    totalAmount
+
+    -------------------------------------------------
+    // Confirm reservation after payment
+    -------------------------------------------------
+
+    FUNCTION confirmReservation()
+
+        reservationStatus = CONFIRMED
+
+        vehicle.status = RESERVED
+
+    END FUNCTION
+
+    -------------------------------------------------
+    // Customer picks vehicle
+    -------------------------------------------------
+
+    FUNCTION startRental()
+
+        reservationStatus = IN_PROGRESS
+
+        vehicle.status = RENTED
+
+    END FUNCTION
+
+    -------------------------------------------------
+    // Customer returns vehicle
+    -------------------------------------------------
+
+    FUNCTION completeRental()
+
+        reservationStatus = COMPLETED
+
+        vehicle.status = AVAILABLE
+
+    END FUNCTION
+
+    -------------------------------------------------
+    // Cancel booking
+    -------------------------------------------------
+
+    FUNCTION cancelReservation()
+
+        reservationStatus = CANCELLED
+
+        vehicle.status = AVAILABLE
+
+    END FUNCTION
+
+END CLASS
+
+=====================================================
+RESERVATION MANAGER
+=====================================================
+
+CLASS ReservationManager
+
+    reservations
+
+    -------------------------------------------------
+    // Create reservation only if vehicle is free
+    -------------------------------------------------
+
+    FUNCTION createReservation(
+        user,
+        vehicle,
+        startDate,
+        endDate
+    )
+
+        IF vehicle.status != AVAILABLE
+
+            PRINT "Vehicle Not Available"
+
+            RETURN NULL
+
+        END IF
+
+        reservation = new Reservation()
+
+        reservation.status = PENDING
+
+        reservations.add(reservation)
+
+        RETURN reservation
+
+    END FUNCTION
+
+    -------------------------------------------------
+    // Cancel reservation
+    -------------------------------------------------
+
+    FUNCTION cancelReservation(reservation)
+
+        reservation.cancelReservation()
+
+    END FUNCTION
+
+END CLASS
+
+=====================================================
+STRATEGY PATTERN
+=====================================================
+
+INTERFACE PaymentStrategy
+
+    FUNCTION processPayment(amount)
+
+END INTERFACE
+
+-----------------------------------------------------
+
+CLASS CreditCardPayment
+
+    FUNCTION processPayment(amount)
+
+        PRINT "Processing Credit Card Payment"
+
+    END FUNCTION
+
+END CLASS
+
+-----------------------------------------------------
+
+CLASS DebitCardPayment
+
+    FUNCTION processPayment(amount)
+
+        PRINT "Processing Debit Card Payment"
+
+    END FUNCTION
+
+END CLASS
+
+-----------------------------------------------------
+
+CLASS CashPayment
+
+    FUNCTION processPayment(amount)
+
+        PRINT "Processing Cash Payment"
+
+    END FUNCTION
+
+END CLASS
+
+=====================================================
+PAYMENT PROCESSOR
+=====================================================
+
+CLASS PaymentProcessor
+
+    -------------------------------------------------
+    // Payment method selected at runtime
+    -------------------------------------------------
+
+    FUNCTION processPayment(
+        amount,
+        paymentStrategy
+    )
+
+        paymentStrategy.processPayment(amount)
+
+    END FUNCTION
+
+END CLASS
+
+=====================================================
+SINGLETON PATTERN
+=====================================================
+
+CLASS RentalSystem
+
+    PRIVATE instance
+
+    stores
+
+    reservationManager
+
+    paymentProcessor
+
+    -------------------------------------------------
+    // Ensure only one RentalSystem exists
+    -------------------------------------------------
+
+    FUNCTION getInstance()
+
+        IF instance == NULL
+
+            instance = new RentalSystem()
+
+        RETURN instance
+
+    END FUNCTION
+
+END CLASS
+
+=====================================================
+COMPLETE WORKFLOW
+=====================================================
+
+MAIN()
+
+    STEP 1:
+        User opens application
+
+    STEP 2:
+        User searches vehicles
+
+    STEP 3:
+        RentalStore returns available vehicles
+
+    STEP 4:
+        User selects SUV
+
+    STEP 5:
+        ReservationManager checks availability
+
+    STEP 6:
+        Create reservation
+
+            Status:
+            PENDING
+
+    STEP 7:
+        User makes payment
+
+            PaymentProcessor
+                ->
+            CreditCardPayment
+
+    STEP 8:
+        Reservation confirmed
+
+            PENDING
+                ↓
+            CONFIRMED
+
+    STEP 9:
+        Vehicle status changes
+
+            AVAILABLE
+                ↓
+            RESERVED
+
+    STEP 10:
+        Customer picks vehicle
+
+            CONFIRMED
+                ↓
+            IN_PROGRESS
+
+            RESERVED
+                ↓
+            RENTED
+
+    STEP 11:
+        Customer returns vehicle
+
+            IN_PROGRESS
+                ↓
+            COMPLETED
+
+            RENTED
+                ↓
+            AVAILABLE
+
+    STEP 12:
+        Rental ends successfully
+
+END MAIN
+
+=====================================================
+OBJECT RELATIONSHIPS
+=====================================================
+
+RentalSystem
+    |
+    +---- RentalStore
+    |
+    +---- ReservationManager
+    |
+    +---- PaymentProcessor
+
+RentalStore
+    |
+    +---- Vehicles
+
+User
+    |
+    +---- Reservations
+
+Reservation
+    |
+    +---- Vehicle
+    |
+    +---- PickupStore
+    |
+    +---- ReturnStore
+
+PaymentProcessor
+    |
+    +---- PaymentStrategy
+            |
+            +---- CreditCardPayment
+            +---- DebitCardPayment
+            +---- CashPayment
+
+=====================================================
