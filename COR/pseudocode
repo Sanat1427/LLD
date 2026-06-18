@@ -1,0 +1,191 @@
+//----------------------------------------------------------
+// Base Handler Class
+//----------------------------------------------------------
+
+CLASS MoneyHandler
+
+    // Reference to next handler in chain
+    VARIABLE nextHandler
+
+    CONSTRUCTOR()
+        nextHandler ← NULL
+    END CONSTRUCTOR
+
+    // Connect current handler with next handler
+    METHOD setNextHandler(next)
+        nextHandler ← next
+    END METHOD
+
+    // Abstract method implemented by child classes
+    ABSTRACT METHOD dispense(amount)
+
+END CLASS
+
+
+//----------------------------------------------------------
+// ₹1000 Note Handler
+//----------------------------------------------------------
+
+CLASS ThousandHandler EXTENDS MoneyHandler
+
+    VARIABLE numNotes
+
+    CONSTRUCTOR(numNotes)
+        this.numNotes ← numNotes
+    END CONSTRUCTOR
+
+    METHOD dispense(amount)
+
+        notesNeeded ← amount / 1000
+
+        IF notesNeeded > numNotes THEN
+            notesNeeded ← numNotes
+            numNotes ← 0
+        ELSE
+            numNotes ← numNotes - notesNeeded
+        END IF
+
+        IF notesNeeded > 0 THEN
+            PRINT "Dispensing ", notesNeeded, " x ₹1000 notes"
+        END IF
+
+        remainingAmount ← amount - (notesNeeded × 1000)
+
+        IF remainingAmount > 0 THEN
+
+            IF nextHandler IS NOT NULL THEN
+                nextHandler.dispense(remainingAmount)
+            ELSE
+                PRINT "Cannot dispense remaining ₹", remainingAmount
+            END IF
+
+        END IF
+
+    END METHOD
+
+END CLASS
+
+
+//----------------------------------------------------------
+// ₹500 Note Handler
+//----------------------------------------------------------
+
+CLASS FiveHundredHandler EXTENDS MoneyHandler
+
+    VARIABLE numNotes
+
+    CONSTRUCTOR(numNotes)
+        this.numNotes ← numNotes
+    END CONSTRUCTOR
+
+    METHOD dispense(amount)
+
+        // Calculate required ₹500 notes
+        notesNeeded ← amount / 500
+
+        // Check note availability
+        IF notesNeeded > numNotes THEN
+            notesNeeded ← numNotes
+            numNotes ← 0
+        ELSE
+            numNotes ← numNotes - notesNeeded
+        END IF
+
+        // Dispense notes
+        IF notesNeeded > 0 THEN
+            PRINT "Dispensing ", notesNeeded, " x ₹500 notes"
+        END IF
+
+        // Remaining amount after dispensing
+        remainingAmount ← amount - (notesNeeded × 500)
+
+        // Pass remaining amount to next handler
+        IF remainingAmount > 0 THEN
+
+            IF nextHandler IS NOT NULL THEN
+                nextHandler.dispense(remainingAmount)
+            ELSE
+                PRINT "Cannot dispense remaining ₹", remainingAmount
+            END IF
+
+        END IF
+
+    END METHOD
+
+END CLASS
+
+
+//----------------------------------------------------------
+// ₹100 Note Handler
+//----------------------------------------------------------
+
+CLASS HundredHandler EXTENDS MoneyHandler
+
+    VARIABLE numNotes
+
+    CONSTRUCTOR(numNotes)
+        this.numNotes ← numNotes
+    END CONSTRUCTOR
+
+    METHOD dispense(amount)
+
+        // Calculate required ₹100 notes
+        notesNeeded ← amount / 100
+
+        // Check note availability
+        IF notesNeeded > numNotes THEN
+            notesNeeded ← numNotes
+            numNotes ← 0
+        ELSE
+            numNotes ← numNotes - notesNeeded
+        END IF
+
+        // Dispense notes
+        IF notesNeeded > 0 THEN
+            PRINT "Dispensing ", notesNeeded, " x ₹100 notes"
+        END IF
+
+        // Remaining amount
+        remainingAmount ← amount - (notesNeeded × 100)
+
+        // No lower denomination available
+        IF remainingAmount > 0 THEN
+
+            IF nextHandler IS NOT NULL THEN
+                nextHandler.dispense(remainingAmount)
+            ELSE
+                PRINT "Cannot dispense remaining ₹", remainingAmount
+                PRINT "ATM does not have sufficient denominations."
+            END IF
+
+        END IF
+
+    END METHOD
+
+END CLASS
+
+
+//----------------------------------------------------------
+// Main Driver Code
+//----------------------------------------------------------
+
+BEGIN
+
+    // Create handlers with available note counts
+    thousandHandler ← new ThousandHandler(3)
+    fiveHundredHandler ← new FiveHundredHandler(5)
+    hundredHandler ← new HundredHandler(20)
+
+    // Create chain
+    thousandHandler.setNextHandler(fiveHundredHandler)
+    fiveHundredHandler.setNextHandler(hundredHandler)
+
+    // Withdrawal request
+    amountToWithdraw ← 4600
+
+    PRINT "Withdrawal Amount = ₹", amountToWithdraw
+
+    // Start from highest denomination
+    thousandHandler.dispense(amountToWithdraw)
+
+END
